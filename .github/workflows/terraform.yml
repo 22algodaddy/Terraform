@@ -13,19 +13,8 @@ jobs:
     steps:
     - name: Checkout repository
       uses: actions/checkout@v4
-
-    # Step 1: Set up Google Cloud SDK
-    - name: Set up Google Cloud SDK
-      uses: google-github-actions/setup-gcloud@v1
-      with:
-        project_id: ${{ secrets.GCP_PROJECT_ID }}
-        service_account_key: ${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}
-        export_default_credentials: true
-
-    # Step 2: Create a temporary file for the service account key
-    - name: Write GCP Service Account Key to file
-      run: echo "${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}" > ./account.json
-
+      env:
+       GOOGLE_CREDENTIALS: ${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}
     # Step 3: Setup Terraform
     - name: Setup Terraform
       uses: hashicorp/setup-terraform@v2
