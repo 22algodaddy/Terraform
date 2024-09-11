@@ -18,5 +18,4 @@ provider "google" {
 # Create a VPC network
 resource "google_compute_network" "peering_network" {
   name = "peering-network"
-
 }
