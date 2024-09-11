@@ -1,51 +1,44 @@
-name: 'Terraform'
+name: 'Terraform GCP Deployment'
 
 on:
   push:
-    branches: [ "master" ]
+    branches:
+      - master
   pull_request:
-
-permissions:
-  contents: read
 
 jobs:
   terraform:
-    name: 'Terraform'
     runs-on: ubuntu-latest
-    environment: production
-
-    # Use the Bash shell regardless of the runner's OS
-    defaults:
-      run:
-        shell: bash
 
     steps:
-    # Checkout the repository to the GitHub Actions runner
-    - name: Checkout
+    - name: Checkout repository
       uses: actions/checkout@v4
 
-    # Install the latest version of Terraform CLI and configure the Terraform CLI configuration file with a Terraform Cloud user API token
-    - name: Setup Terraform
-      uses: hashicorp/setup-terraform@v2
-
-    # Set up Google Cloud SDK
+    # Step 1: Set up Google Cloud SDK
     - name: Set up Google Cloud SDK
       uses: google-github-actions/setup-gcloud@v1
       with:
-        version: 'latest'
         project_id: ${{ secrets.GCP_PROJECT_ID }}
         service_account_key: ${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}
         export_default_credentials: true
 
-    # Initialize a new or existing Terraform working directory by creating initial files, loading any remote state, downloading modules, etc.
+    # Step 2: Create a temporary file for the service account key
+    - name: Write GCP Service Account Key to file
+      run: echo "${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}" > ./account.json
+
+    # Step 3: Setup Terraform
+    - name: Setup Terraform
+      uses: hashicorp/setup-terraform@v2
+
+    # Step 4: Initialize Terraform
     - name: Terraform Init
       run: terraform init
 
-    # Generates an execution plan for Terraform
+    # Step 5: Plan Terraform changes
     - name: Terraform Plan
       run: terraform plan -input=false
 
-    # Apply infrastructure changes on push to "master" branch
+    # Step 6: Apply Terraform changes (only on push to main branch)
     - name: Terraform Apply
-
-      run: terraform apply -auto-approve -input=false
+    
+      run: terraform apply -auto-approve
